@@ -61,11 +61,32 @@ const isValidDate = (date) => {
 const isValidQuantity = (quantity) => quantity.match(/\d+/g);
 
 /**
- * Triggers an error alert
- * @param {string} field - The field to display in the error message
+ * Display error by adding an error span to the element
+ * @param {string} field - The field where error occured
+ * @param {string} error - The error message to display
+ */
+const triggersError = (field, error) => {
+  const existingTag = document.querySelector(`.error--${field}`);
+
+  if (existingTag) {
+    existingTag.innerText = error;
+    return;
+  }
+
+  const element = document.querySelector(`#${field}`);
+  const errorTag = document.createElement('span');
+  errorTag.innerText = error;
+  errorTag.className = `error error--${field}`;
+
+  element?.after(errorTag);
+};
+
+/**
+ * Clear the error corresponding to the given field
+ * @param {string} field - The field name
  */
 /* prettier-ignore */
-const triggersError = (field) => alert(`You must fill in field ${field} properly.`);
+const clearError = (field) => document.querySelector(`.error--${field}`)?.remove();
 
 /**
  * Form submit handling method. Validate inputs and submit.
@@ -75,44 +96,60 @@ const handleSubmit = (e) => {
   e.preventDefault();
 
   const formData = new FormData(form);
+  let errorTriggered = false;
 
   /* check form fields */
   for (const [field, value] of formData) {
     switch (field) {
       case 'firstname':
       case 'lastname': {
-        if (value.trim().length < 2 || !isValidString(value)) {
-          triggersError(field);
+        if (!isValidString(value) || value.trim().length < 2) {
+          triggersError(field, 'Ce champ doit faire au moins 2 caractères.');
+          errorTriggered = true;
           return;
         }
 
+        errorTriggered = false;
+        clearError(field);
         break;
       }
 
       case 'email': {
         if (!isValidString(value) || !isValidEmail(value)) {
-          triggersError(field);
+          triggersError(field, "L'adresse email doit être valide.");
+          errorTriggered = true;
           return;
         }
 
+        errorTriggered = false;
+        clearError(field);
         break;
       }
 
       case 'birthdate': {
         if (!isValidString(value) || !isValidDate(value)) {
-          triggersError(field);
+          triggersError(field, 'La date de naissance doit être valide.');
+          errorTriggered = true;
           return;
         }
 
+        errorTriggered = false;
+        clearError(field);
         break;
       }
 
       case 'quantity': {
         if (!isValidString(value) || !isValidQuantity(value)) {
-          triggersError(field);
+          triggersError(
+            field,
+            'La quantité saisie doit être un nombre supérieur à zéro'
+          );
+          errorTriggered = true;
           return;
         }
 
+        errorTriggered = false;
+        clearError(field);
         break;
       }
 
@@ -122,17 +159,27 @@ const handleSubmit = (e) => {
     }
   }
 
+  /* if error triggered, no need to check for extra fields */
+  if (errorTriggered) return;
+
   /* check location */
   if (!formData.get('location')) {
-    triggersError('location');
+    triggersError('location', 'Un lieu doit être saisi.');
     return;
   }
 
+  clearError('location');
+
   /* check terms and conditions */
   if (!document.querySelector('#checkbox1').checked) {
-    alert('You must accept terms and conditions.');
+    triggersError(
+      'terms-error',
+      "Vous devez accepter les conditions d'utilisation"
+    );
     return;
   }
+
+  clearError('terms-error');
 
   // fetch(...)
   form.reset();

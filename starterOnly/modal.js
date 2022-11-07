@@ -182,6 +182,7 @@ const handleSubmit = (e) => {
   clearError('terms-error');
 
   // fetch(...)
+  alert('Merci! Votre réservation a bien été reçue.');
   form.reset();
   closeModal();
 };

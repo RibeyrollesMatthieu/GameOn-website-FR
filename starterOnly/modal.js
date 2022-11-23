@@ -12,11 +12,6 @@ function editNav() {
   }
 }
 
-// launch modal form
-function launchModal() {
-  modalbg.style.display = 'block';
-}
-
 /**
  * close" modal on click
  */
@@ -78,6 +73,10 @@ const triggersError = (field, error) => {
   errorTag.innerText = error;
   errorTag.className = `error error--${field}`;
 
+  if (element.tagName.toLowerCase() === 'input') {
+    element.style.border = '3px solid red';
+  }
+
   element?.after(errorTag);
 };
 
@@ -85,8 +84,30 @@ const triggersError = (field, error) => {
  * Clear the error corresponding to the given field
  * @param {string} field - The field name
  */
-/* prettier-ignore */
-const clearError = (field) => document.querySelector(`.error--${field}`)?.remove();
+const clearError = (field) => {
+  const element = document.querySelector(`#${field}`);
+  element.style.border = 'none';
+
+  document.querySelector(`.error--${field}`)?.remove();
+};
+
+/**
+ * Hide form and displays confirmation message
+ */
+const confirmation = () => {
+  form.style.opacity = '0';
+
+  const element = document.createElement('div');
+  element.innerText = 'Merci! Votre réservation a bien été reçue.';
+  element.className = 'confirmation-message';
+
+  document.querySelector('.modal-body').appendChild(element);
+};
+
+const resetDisplay = () => {
+  form.style.opacity = 1;
+  document.querySelector('.confirmation-message')?.remove();
+};
 
 /**
  * Form submit handling method. Validate inputs and submit.
@@ -109,8 +130,6 @@ const handleSubmit = (e) => {
           return;
         }
 
-        errorTriggered = false;
-        clearError(field);
         break;
       }
 
@@ -121,8 +140,6 @@ const handleSubmit = (e) => {
           return;
         }
 
-        errorTriggered = false;
-        clearError(field);
         break;
       }
 
@@ -133,8 +150,6 @@ const handleSubmit = (e) => {
           return;
         }
 
-        errorTriggered = false;
-        clearError(field);
         break;
       }
 
@@ -148,8 +163,6 @@ const handleSubmit = (e) => {
           return;
         }
 
-        errorTriggered = false;
-        clearError(field);
         break;
       }
 
@@ -157,6 +170,9 @@ const handleSubmit = (e) => {
         break;
       }
     }
+
+    errorTriggered = false;
+    clearError(field);
   }
 
   /* if error triggered, no need to check for extra fields */
@@ -182,10 +198,15 @@ const handleSubmit = (e) => {
   clearError('terms-error');
 
   // fetch(...)
-  alert('Merci! Votre réservation a bien été reçue.');
   form.reset();
-  closeModal();
+  confirmation();
 };
+
+// launch modal form
+function launchModal() {
+  resetDisplay();
+  modalbg.style.display = 'block';
+}
 
 // launch modal event
 modalBtn.forEach((btn) => btn.addEventListener('click', launchModal));
